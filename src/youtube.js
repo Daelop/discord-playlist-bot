@@ -1,8 +1,7 @@
 import axios from 'axios';
 
-export async function addToYoutubePlaylist(url) {
-  // eslint-disable-next-line no-undef
-  const apiKey = process.env.YOUTUBE_API_KEY;
+export async function addToYoutubePlaylist(url, env) {
+  const apiKey = env.YOUTUBE_KEY;
   if (!apiKey) {
     throw new Error('The YOUTUBE_API_KEY environment variable is required.');
   }
@@ -34,15 +33,11 @@ export async function addToYoutubePlaylist(url) {
         data: response.data,
       };
     } else {
-      return {
-        success: false,
-        message: `Failed to add video to playlist. Status code: ${response.status}`,
-      };
+      throw new Error(
+        `Failed to add video to playlist. Status code: ${response.status}. Response: ${JSON.stringify(response.data)}`,
+      );
     }
   } catch (error) {
-    return {
-      success: false,
-      message: `Error adding video to playlist: ${error.message}`,
-    };
+    throw new Error(`Error adding video to playlist: ${error.message}`);
   }
 }
