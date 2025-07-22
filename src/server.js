@@ -43,7 +43,15 @@ router.post('/', async (request, env) => {
     env,
   );
   if (!isValid || !interaction) {
-    return new Response('Bad request signature.', { status: 401 });
+    return new JsonResponse(
+      {
+        type: InteractionResponseType.CHANNEL_MESSAGE_WITH_SOURCE,
+        data: {
+          content: 'Failed to verify request signature.',
+        },
+      },
+      { status: 401 },
+    );
   }
 
   if (interaction.type === InteractionType.PING) {
@@ -58,15 +66,27 @@ router.post('/', async (request, env) => {
     // Most user commands will come as `APPLICATION_COMMAND`.
     switch (interaction.data.name.toLowerCase()) {
       case ADD_COMMAND.name:
-        // Handle the add command
-        await addToYoutubePlaylist(interaction.data.options[0].value);
-        // Respond with a message indicating the song was added
-        return new JsonResponse({
-          type: InteractionResponseType.CHANNEL_MESSAGE_WITH_SOURCE,
-          data: {
-            content: 'Song added to the playlist.',
-          },
-        });
+        try {
+          await addToYoutubePlaylist(interaction.data.options[0].value, env);
+          
+          return new JsonResponse({
+            type: InteractionResponseType.CHANNEL_MESSAGE_WITH_SOURCE,
+            data: {
+              content: 'Song added to the playlist.',
+            },
+          });
+        } catch (err) {
+          console.error('Error in addToYoutubePlaylist:', err);
+          return new JsonResponse(
+            {
+              type: InteractionResponseType.CHANNEL_MESSAGE_WITH_SOURCE,
+              data: {
+                content: 'Failed to add song to the playlist.',
+              },
+            },
+            { status: 500 },
+          );
+        }
       default:
         return new JsonResponse({ error: 'Unknown Type' }, { status: 400 });
     }
