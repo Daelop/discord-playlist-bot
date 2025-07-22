@@ -68,7 +68,7 @@ router.post('/', async (request, env) => {
       case ADD_COMMAND.name:
         try {
           await addToYoutubePlaylist(interaction.data.options[0].value, env);
-          
+
           return new JsonResponse({
             type: InteractionResponseType.CHANNEL_MESSAGE_WITH_SOURCE,
             data: {
